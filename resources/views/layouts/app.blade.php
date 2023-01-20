@@ -15,17 +15,17 @@
         <script type="module">
 
             // Enable pusher logging - don't include this in production
-            // Pusher.logToConsole = {!! json_encode(config('app.debug')) !!};
+            Pusher.logToConsole = {!! json_encode(config('app.debug')) !!};
 
-            // var pusher = new Pusher({!! json_encode(config('broadcasting.connections.pusher.key')) !!}, {
-            //     cluster: 'ap1'
-            // });
+            var pusher = new Pusher({!! json_encode(config('broadcasting.connections.pusher.key')) !!}, {
+                cluster: 'ap1'
+            });
 
-            // var channel = pusher.subscribe('global-channel');
-            // channel.bind('global-event', function(data) {
-            //     console.log(data);
-            //     alert(JSON.stringify(data));
-            // });
+            var channel = pusher.subscribe('global-channel');
+            channel.bind('global-event', function(data) {
+                console.log(data);
+                alert(JSON.stringify(data));
+            });
         </script>
     </head>
     <body class="font-sans antialiased"
@@ -55,6 +55,34 @@
                 </main>
             </div>
             @include('layouts.footer')
+
+            @if(auth()->user()->is_admin)
+                <script type="module">
+                    function sendMarkRequest(id = null) {
+                        return $.ajax("{{ route('admin.markNotification') }}", {
+                            method: 'POST',
+                            data: {
+                                _token : "{{ csrf_token() }}",
+                                id
+                            }
+                        });
+                    }
+                    $(function() {
+                        $('.mark-as-read').click(function() {
+                            let request = sendMarkRequest($(this).data('id'));
+                            request.done(() => {
+                                $(this).parents('div.alert').remove();
+                            });
+                        });
+                        $('#mark-all').click(function() {
+                            let request = sendMarkRequest();
+                            request.done(() => {
+                                $('div.alert').remove();
+                            })
+                        });
+                    });
+                </script>
+            @endif
         </div>
     </body>
 </html>

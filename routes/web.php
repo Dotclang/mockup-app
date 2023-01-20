@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,16 @@ Route::middleware('auth')->group(function () {
 Route::get('event-test', function () {
     event(new App\Events\GlobalEvent('From Routing'));
     return "Event has been sent!";
+});
+
+Route::group([
+    // 'prefix' => 'v1',
+    'as' => 'admin.',
+    // 'namespace' => 'App\V1\Admin',
+    'middleware' => 'auth',
+], function () {
+    Route::get('/admin', [HomeController::class, 'index'])->name('dashboard');
+    Route::post('/mark-as-read', [HomeController::class, 'markNotification'])->name('markNotification');
 });
 
 require __DIR__ . '/auth.php';
